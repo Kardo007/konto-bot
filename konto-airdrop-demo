@@ -1,0 +1,90 @@
+// KONTO Web3 Mini Game - Prototype + Wallet Connect + Balance
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
+export default function App() {
+  const [taps, setTaps] = useState(0);
+  const [tokensEarned, setTokensEarned] = useState(0);
+  const [walletAddress, setWalletAddress] = useState("");
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
+
+  const handleTap = () => {
+    const newTaps = taps + 1;
+    setTaps(newTaps);
+    if (newTaps % 1000 === 0 && tokensEarned < 3) {
+      setTokensEarned((prev) => prev + 0.1);
+    }
+  };
+
+  const connectWallet = async () => {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        setWalletAddress(accounts[0]);
+        setWalletConnected(true);
+        getBalance(accounts[0]);
+      } catch (error) {
+        console.error("Ошибка подключения кошелька:", error);
+      }
+    } else {
+      alert("Установите MetaMask!");
+    }
+  };
+
+  const getBalance = async (address: string) => {
+    // В будущем подключим контракт KONTO токена через Web3 или Ethers.js
+    // Сейчас покажем пример с фиктивным балансом
+    // TODO: Реализовать через ethers.js контракт и ABI
+    const dummyBalance = 10.0;
+    setWalletBalance(dummyBalance);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-black to-green-950 text-white flex flex-col items-center justify-center p-6">
+      <Card className="p-6 max-w-md w-full text-center space-y-4">
+        <img
+          src="https://i.imgur.com/4GVlcuM.jpeg"
+          alt="KONTO Logo"
+          className="w-40 h-40 mx-auto rounded-full border border-yellow-500"
+        />
+        <h1 className="text-3xl font-bold">KONTO Airdrop Game</h1>
+        <p>Tap to earn KONTO tokens!</p>
+        <Button
+          className="bg-yellow-500 hover:bg-yellow-400 text-black text-xl py-4 px-6 rounded-full shadow-lg"
+          onClick={handleTap}
+        >
+          TAP
+        </Button>
+
+        <div>
+          <p>Taps: {taps}</p>
+          <p>KONTO Tokens Earned: {tokensEarned.toFixed(2)}</p>
+        </div>
+
+        {!walletConnected ? (
+          <Button
+            onClick={connectWallet}
+            className="bg-green-600 hover:bg-green-500 text-white w-full"
+          >
+            Подключить кошелёк
+          </Button>
+        ) : (
+          <div className="text-sm text-gray-300 mt-2">
+            <p>Адрес: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</p>
+            <p>Баланс KONTO: {walletBalance.toFixed(2)}</p>
+          </div>
+        )}
+
+        <Button className="bg-blue-500 hover:bg-blue-400 text-white w-full">
+          Пригласить друга
+        </Button>
+
+        <p className="text-xs text-gray-400">
+          *Каждые 1000 нажатий — 0.10% токена. Максимум 3 KONTO в день.
+        </p>
+      </Card>
+    </div>
+  );
+}
